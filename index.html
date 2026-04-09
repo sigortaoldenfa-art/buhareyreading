@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متابعة القراءة: عمر وطارق</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { color: #1a73e8; cursor: pointer; border-bottom: 2px dashed #1a73e8; margin-bottom: 5px; }
+        .header { display: flex; background: #e8f0fe; padding: 12px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; text-align: center; }
+        .day-row { display: flex; padding: 12px 0; border-bottom: 1px solid #eee; align-items: center; transition: 0.3s; }
+        .day-row:hover { background: #fafafa; }
+        .col { flex: 1; text-align: center; }
+        .col-day { width: 50px; flex: none; font-weight: bold; color: #555; }
+        button { border: 1px solid #ddd; padding: 8px 12px; cursor: pointer; border-radius: 6px; background: white; font-size: 1.1em; transition: 0.2s; }
+        button.active-read { background: #28a745 !important; color: white; border-color: #28a745; box-shadow: 0 2px 5px rgba(40,167,69,0.4); }
+        button.active-not { background: #dc3545 !important; color: white; border-color: #dc3545; box-shadow: 0 2px 5px rgba(220,53,69,0.4); }
+        .btn-group { display: flex; justify-content: center; gap: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1 id="main-title" contenteditable="true">جدول متابعة القراءة</h1>
+    <p style="color: #666; font-size: 0.85em; margin-bottom: 20px;">(يمكنك تغيير العنوان بالضغط عليه - يتغير عند الجميع)</p>
+
+    <div class="container">
+        <div class="header">
+            <div class="col-day">اليوم</div>
+            <div class="col">عمر</div>
+            <div class="col">طارق</div>
+        </div>
+        <div id="tracker-body"></div>
+    </div>
+
+    <script>
+        // إعدادات Firebase الخاصة بمشروعك (تم ملؤها من صورتك)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBu_t2euCGm18hFco1d54jevRPB5YrWvDA",
+            authDomain: "reading-buharey.firebaseapp.com",
+            databaseURL: "https://reading-buharey-default-rtdb.firebaseio.com/", 
+            projectId: "reading-buharey",
+            storageBucket: "reading-buharey.firebasestorage.app",
+            messagingSenderId: "794750856784",
+            appId: "1:794750856784:web:7ea6cb7533575b2458eb55"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const body = document.getElementById('tracker-body');
+        const mainTitle = document.getElementById('main-title');
+
+        // إنشاء 30 يوم
+        for (let i = 1; i <= 30; i++) {
+            const row = document.createElement('div');
+            row.className = 'day-row';
+            row.innerHTML = `
+                <div class="col-day">${i}</div>
+                <div class="col btn-group">
+                    <button id="omar-read-${i}" onclick="updateDB(${i},'omar','read')">✔</button>
+                    <button id="omar-not-${i}" onclick="updateDB(${i},'omar','not')">✘</button>
+                </div>
+                <div class="col btn-group">
+                    <button id="tarek-read-${i}" onclick="updateDB(${i},'tarek','read')">✔</button>
+                    <button id="tarek-not-${i}" onclick="updateDB(${i},'tarek','not')">✘</button>
+                </div>`;
+            body.appendChild(row);
+        }
+
+        // تحديث البيانات
+        function updateDB(day, user, status) {
+            db.ref('tracking/' + day + '/' + user).set(status);
+        }
+
+        // تحديث العنوان
+        mainTitle.addEventListener('input', () => {
+            db.ref('settings/title').set(mainTitle.innerText);
+        });
+
+        // الاستماع للتغييرات اللحظية
+        db.ref().on('value', (snap) => {
+            const data = snap.val() || {};
+            const tracking = data.tracking || {};
+            const title = data.settings?.title || "جدول متابعة القراءة";
+            
+            mainTitle.innerText = title;
+
+            for (let i = 1; i <= 30; i++) {
+                ['omar', 'tarek'].forEach(u => {
+                    const status = tracking[i]?.[u];
+                    const readBtn = document.getElementById(u + '-read-' + i);
+                    const notBtn = document.getElementById(u + '-not-' + i);
+                    
+                    readBtn.className = (status === 'read') ? 'active-read' : '';
+                    notBtn.className = (status === 'not') ? 'active-not' : '';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
