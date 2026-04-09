@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة القراءة: عمر وطارق</title>
+    <title>متابعة القراءة: عمرو وطارق</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -88,7 +88,7 @@
             mainTitle.innerText = title;
 
             for (let i = 1; i <= 30; i++) {
-                ['omar', 'tarek'].forEach(u => {
+                ['amar', 'tarek'].forEach(u => {
                     const status = tracking[i]?.[u];
                     const readBtn = document.getElementById(u + '-read-' + i);
                     const notBtn = document.getElementById(u + '-not-' + i);
